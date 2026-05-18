@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Practice Tracker</title>
+
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Avenir', 'Avenir Next', Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #203d76;
+    color: #ffffff;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .tracker {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    background: #172d5a;
+    border-bottom: 3px solid #ffde0c;
+    padding: 2rem 1.5rem;
+    border-radius: 4px;
+    background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 8px);
+  }
+
+  .header h1 {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    color: #ffffff;
+    margin-bottom: 0.65rem;
+  }
+
+  .header p {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2babe2;
+  }
+
+  .storage-note {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-left: 3px solid #ffde0c;
+    border-radius: 4px;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .storage-note-title {
+    display: block;
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #ffde0c;
+    margin-bottom: 0.6rem;
+  }
+
+  .storage-note p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.86);
+    line-height: 1.65;
+    margin-bottom: 0.75rem;
+  }
+
+  .storage-note p:last-child {
+    margin-bottom: 0;
+  }
+
+  .top-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.75rem;
+  }
+
+  .download-top-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffde0c;
+    color: #203d76;
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 2px;
+    padding: 0.95rem 1.6rem;
+    cursor: pointer;
+  }
+
+  .download-top-btn:hover {
+    background: #e8ca00;
+  }
+
+  .week-selector {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .week-btn {
+    padding: 0.65rem 1.15rem;
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+  }
+
+  .week-btn.active {
+    background: #2babe2;
+    border-color: #2babe2;
+    color: #ffffff;
+  }
+
+  .focus-card {
+    background: #172d5a;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-left: 3px solid #2babe2;
+    border-radius: 4px;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .focus-label {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #2babe2;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+  }
+
+  .focus-text {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.86);
+    line-height: 1.6;
+  }
+
+  .focus-item {
+    margin-bottom: 0.8rem;
+  }
+
+  .focus-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .focus-kicker {
+    display: block;
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #ffde0c;
+    margin-bottom: 0.2rem;
+  }
+
+  .focus-line {
+    display: block;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.6;
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .week-nav-label {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 700;
+  }
+
+  .week-nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 2px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.75rem;
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .week-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .day-strip {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+
+  .day-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0.75rem 0.25rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.14);
+    cursor: pointer;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .day-pill.active {
+    border-color: #ffde0c;
+    background: rgba(255,222,12,0.14);
+  }
+
+  .day-pill.locked {
+    opacity: 0.28;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .day-name {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .day-num {
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .day-pill.is-today .day-num {
+    color: #ffde0c;
+  }
+
+  .day-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #2babe2;
+    opacity: 0;
+  }
+
+  .day-pill.has-entry .day-dot {
+    opacity: 1;
+  }
+
+  .current-date {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    margin-bottom: 1rem;
+  }
+
+  .card,
+  .reflection-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 4px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .question-text {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+  }
+
+  .yes-no {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0.8rem;
+  }
+
+  .yn-btn {
+    padding: 0.55rem 1.4rem;
+    font-size: 0.8rem;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: transparent;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+  }
+
+  .yn-btn.yes.selected {
+    background: #2babe2;
+    border-color: #2babe2;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .yn-btn.no.selected {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.28);
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .note-input,
+  .reflection-input {
+    width: 100%;
+    font-size: 0.9rem;
+    color: #ffffff;
+    background: rgba(0,0,0,0.12);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 0.75rem;
+    resize: none;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  .note-input {
+    min-height: 56px;
+  }
+
+  .reflection-input {
+    min-height: 70px;
+  }
+
+  .note-input:focus,
+  .reflection-input:focus {
+    outline: none;
+    border-color: #2babe2;
+  }
+
+  .note-input::placeholder,
+  .reflection-input::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
+
+  .optional-label {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #ffde0c;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+
+  .reflection-prompt {
+    color: rgba(255,255,255,0.82);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+   }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .save-btn,
+  .export-btn {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    padding: 0.95rem 1rem;
+    cursor: pointer;
+  }
+
+  .save-btn {
+    flex: 1;
+    border: none;
+    background: #2babe2;
+    color: #ffffff;
+  }
+
+  .export-btn {
+    border: none;
+    background: #ffde0c;
+    color: #203d76;
+    white-space: nowrap;
+  }
+
+  .saved-msg {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #ffde0c;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-bg.open {
+    display: flex;
+  }
+
+  .modal {
+    background: #172d5a;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-top: 3px solid #ffde0c;
+    border-radius: 4px;
+    padding: 1.75rem;
+    max-width: 440px;
+    width: 100%;
+  }
+
+  .modal h2 {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+    color: #ffffff;
+  }
+
+  .modal p {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .modal-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-btn {
+    padding: 0.9rem 1rem;
+    border-radius: 2px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06);
+    color: #ffffff;
+    text-align: left;
+  }
+
+  .modal-btn.primary {
+    background: #ffde0c;
+    color: #203d76;
+    border-color: #ffde0c;
+  }
+
+  .modal-close {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+  }
+
+  @media (max-width: 560px) {
+    body {
+      padding: 1rem 0.75rem 3rem;
+    }
+
+    .btn-row {
+      flex-direction: column;
+    }
+
+    .export-btn {
+      width: 100%;
+    }
+
+    .week-nav {
+      gap: 0.75rem;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="tracker">
+  <div class="header">
+    <h1>Daily Practice Tracker</h1>
+    <p>2-3 minutes. Just for you.</p>
+  </div>
+
+  <div class="storage-note">
+    <span class="storage-note-title">Read This First</span>
+    <p>No login is needed. Your entries save only on the device and browser you are using right now.</p>
+    <p>Use the same device and same browser each time you come back to this tracker.</p>
+    <p>If you switch devices, switch browsers, or clear cache/cookies/site data, your saved entries may disappear. Download your data first.</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="download-top-btn" id="downloadTopBtn">Download My Data</button>
+  </div>
+
+  <div class="week-selector" id="weekSelector"></div>
+
+  <div class="focus-card">
+    <div class="focus-label">This Week's Focus</div>
+    <div class="focus-text" id="focusText"></div>
+  </div>
+
+  <div class="week-nav">
+    <button class="week-nav-btn" id="prevWeek">Prev</button>
+    <span class="week-nav-label" id="weekNavLabel"></span>
+    <button class="week-nav-btn" id="nextWeek">Next</button>
+  </div>
+
+  <div class="day-strip" id="dayStrip"></div>
+
+  <div class="current-date" id="currentDate"></div>
+
+  <div id="questions"></div>
+
+  <div class="reflection-card">
+    <div class="optional-label">Optional Daily Reflection</div>
+    <div class="reflection-prompt" id="reflectionPrompt"></div>
+    <textarea class="reflection-input" id="reflectionInput" placeholder="What did I learn today?" rows="3"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="save-btn" id="saveBtn">Save Entry</button>
+    <button class="export-btn" id="exportBtn">Download</button>
+  </div>
+
+  <div class="saved-msg" id="savedMsg"></div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>Download Your Tracker</h2>
+    <p>Use this before you clear browser data or switch devices. This downloads a backup of the entries saved in this browser.</p>
+
+    <div class="modal-btns">
+      <button class="modal-btn primary" id="downloadJson">Download Full Data Backup</button>
+      <button class="modal-btn" id="printSummary">Print / Save Readable Summary</button>
+    </div>
+
+    <div class="modal-close" id="modalClose">Cancel</div>
+  </div>
+</div>
+
+<script>
+const COHORT_START = new Date(2025, 4, 19);
+
+const WEEKS = [
+  {
+    label: 'Week 1',
+    focus: 'Notice the Weather',
+    assignment: 'Once per day, notice a moment of stress or reactivity as it is happening.',
+    notice: 'What was I thinking? What did I feel in my body? What did I want to do next?',
+    dailyPrompt: 'If helpful, write a few notes: What was I thinking? What did I feel in my body? What did I want to do next?',
+    weeklyReport: 'For the weekly discussion: Describe one specific moment this week where you noticed your reaction.'
+  },
+  {
+    label: 'Week 2',
+    focus: 'Notice the Sky Before Responding',
+    assignment: 'Once per day, before responding in a situation that matters, take one conscious breath.',
+    notice: 'Did the pause change anything? Did I feel even slightly less automatic?',
+    dailyPrompt: 'If helpful, write a few notes: Did the pause change anything? Did I feel even slightly less automatic?',
+    weeklyReport: 'For the weekly discussion: Describe one moment where you paused before responding.'
+  },
+  {
+    label: 'Week 3',
+    focus: 'Use the Pause in One Real Situation',
+    assignment: 'Choose one specific conversation, meeting, or decision in advance. Insert a pause before responding.',
+    notice: 'Did clarity improve? Did the outcome shift at all?',
+    dailyPrompt: 'If helpful, write a few notes: Did I insert a pause before responding? Did clarity improve? Did the outcome shift at all?',
+    weeklyReport: 'For the weekly discussion: Walk me through that situation step by step.'
+  },
+  {
+    label: 'Week 4',
+    focus: 'Let It Become Natural',
+    assignment: 'Two or three times per day, pause for 10-20 seconds and notice that the sky is already here.',
+    notice: 'How quickly can I access it? Does it feel more familiar?',
+    dailyPrompt: 'If helpful, write a few notes: How many times today did I notice the sky was already there? How quickly could I access it?',
+    weeklyReport: 'For the weekly discussion: Where did this show up most naturally this week?'
+  }
+];
+
+const QUESTIONS = [
+  'Did I notice a moment where I got pulled into the "weather" (stress, reaction)?',
+  'Did I notice the "sky" - even briefly - before responding?',
+  'Did that change anything in how I responded?'
+];
+
+const DNAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DFULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let log = {};
+
+try {
+  log = JSON.parse(localStorage.getItem('sanTrackerV4') || '{}');
+} catch(e) {}
+
+function saveLog() {
+  try {
+    localStorage.setItem('sanTrackerV4', JSON.stringify(log));
+  } catch(e) {}
+}
+
+const today = new Date();
+today.setHours(0,0,0,0);
+
+function dateKey(d) {
+  const x = new Date(d);
+  x.setHours(0,0,0,0);
+  return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0');
+}
+
+function getWeekDays(offset) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(COHORT_START);
+    d.setDate(COHORT_START.getDate() + offset * 7 + i);
+    days.push(d);
+  }
+  return days;
+}
+
+function getTodayWeekOffset() {
+  const diff = Math.floor((today - COHORT_START) / (7 * 24 * 60 * 60 * 1000));
+  return Math.max(0, Math.min(3, diff));
+}
+
+let weekOffset = getTodayWeekOffset();
+let currentWeek = weekOffset;
+let selectedDate = new Date(today);
+let answers = {};
+let notes = {};
+let reflection = '';
+
+if (today < COHORT_START) {
+  selectedDate = new Date(COHORT_START);
+  weekOffset = 0;
+  currentWeek = 0;
+}
+
+function loadEntry() {
+  const e = log[dateKey(selectedDate)];
+
+  if (e) {
+    answers = {...e.answers};
+    notes = {...e.notes};
+    reflection = e.reflection || '';
+    if (e.week !== undefined) currentWeek = e.week;
+  } else {
+    answers = {};
+    notes = {};
+    reflection = '';
+  }
+}
+
+function renderWeekSelector() {
+  const el = document.getElementById('weekSelector');
+  el.innerHTML = '';
+
+  WEEKS.forEach((w,i) => {
+    const b = document.createElement('button');
+    b.className = 'week-btn' + (i === currentWeek ? ' active' : '');
+    b.textContent = w.label;
+    b.onclick = () => {
+      currentWeek = i;
+      weekOffset = i;
+      selectedDate = getWeekDays(i)[0];
+      renderAll();
+    };
+    el.appendChild(b);
+  });
+}
+
+function renderFocus() {
+  const week = WEEKS[currentWeek];
+  document.getElementById('focusText').innerHTML =
+    '<div class="focus-item"><span class="focus-kicker">Focus</span><span class="focus-line">' + escapeHtml(week.focus) + '</span></div>' +
+    '<div class="focus-item"><span class="focus-kicker">Daily Practice</span><span class="focus-line">' + escapeHtml(week.assignment) + '</span></div>' +
+    '<div class="focus-item"><span class="focus-kicker">What to Notice</span><span class="focus-line">' + escapeHtml(week.notice) + '</span></div>' +
+    '<div class="focus-item"><span class="focus-kicker">Weekly Discussion</span><span class="focus-line">' + escapeHtml(week.weeklyReport) + '</span></div>';
+}
+
+function renderWeekNav() {
+  const days = getWeekDays(weekOffset);
+  const fmt = d => MONTHS[d.getMonth()].slice(0,3) + ' ' + d.getDate();
+
+  document.getElementById('weekNavLabel').textContent = fmt(days[0]) + ' - ' + fmt(days[6]);
+  document.getElementById('prevWeek').disabled = weekOffset <= 0;
+  document.getElementById('nextWeek').disabled = weekOffset >= 3;
+}
+
+function renderDayStrip() {
+  const strip = document.getElementById('dayStrip');
+  strip.innerHTML = '';
+
+  getWeekDays(weekOffset).forEach(d => {
+    const isFuture = d > today;
+    const isSelected = dateKey(d) === dateKey(selectedDate);
+    const isToday = dateKey(d) === dateKey(today);
+    const hasEntry = !!log[dateKey(d)];
+
+    const pill = document.createElement('div');
+    pill.className = 'day-pill' + (isSelected ? ' active' : '') + (isFuture ? ' locked' : '') + (isToday ? ' is-today' : '') + (hasEntry && !isSelected ? ' has-entry' : '');
+    pill.innerHTML = '<span class="day-name">' + DNAMES[d.getDay()] + '</span><span class="day-num">' + d.getDate() + '</span><span class="day-dot"></span>';
+
+    if (!isFuture) {
+      pill.onclick = () => {
+        selectedDate = new Date(d);
+        renderAll();
+      };
+    }
+
+    strip.appendChild(pill);
+  });
+}
+
+function renderCurrentDate() {
+  const d = selectedDate;
+  const isToday = dateKey(d) === dateKey(today);
+
+  document.getElementById('currentDate').textContent = (isToday ? 'Today - ' : '') + DFULL[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
+}
+
+function renderQuestions() {
+  const c = document.getElementById('questions');
+  c.innerHTML = '';
+
+  QUESTIONS.forEach((q,i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const qt = document.createElement('div');
+    qt.className = 'question-text';
+    qt.textContent = q;
+    card.appendChild(qt);
+
+    const row = document.createElement('div');
+    row.className = 'yes-no';
+
+    ['Yes','No'].forEach(val => {
+      const b = document.createElement('button');
+      b.className = 'yn-btn ' + val.toLowerCase() + (answers[i] === val ? ' selected' : '');
+      b.textContent = val;
+      b.onclick = () => {
+        answers[i] = val;
+        renderQuestions();
+      };
+      row.appendChild(b);
+    });
+
+    card.appendChild(row);
+
+    const ta = document.createElement('textarea');
+    ta.className = 'note-input';
+    ta.placeholder = 'Add a note... (optional)';
+    ta.value = notes[i] || '';
+    ta.oninput = () => {
+      notes[i] = ta.value;
+    };
+
+    card.appendChild(ta);
+    c.appendChild(card);
+  });
+}
+
+function renderReflection() {
+  const el = document.getElementById('reflectionInput');
+  const prompt = WEEKS[currentWeek].dailyPrompt;
+  document.getElementById('reflectionPrompt').textContent = prompt;
+  el.placeholder = 'Write anything you want to remember from today...';
+  el.value = reflection;
+  el.oninput = () => {
+    reflection = el.value;
+  };
+}
+
+function renderAll() {
+  loadEntry();
+  renderWeekSelector();
+  renderFocus();
+  renderWeekNav();
+  renderDayStrip();
+  renderCurrentDate();
+  renderQuestions();
+  renderReflection();
+  document.getElementById('savedMsg').textContent = '';
+}
+
+document.getElementById('prevWeek').onclick = () => {
+  if (weekOffset > 0) {
+    weekOffset--;
+    renderWeekNav();
+    renderDayStrip();
+  }
+};
+
+document.getElementById('nextWeek').onclick = () => {
+  if (weekOffset < 3) {
+    weekOffset++;
+    renderWeekNav();
+    renderDayStrip();
+  }
+};
+
+document.getElementById('saveBtn').onclick = () => {
+  log[dateKey(selectedDate)] = {
+    week: currentWeek,
+    answers: {...answers},
+    notes: {...notes},
+    reflection
+  };
+
+  saveLog();
+  document.getElementById('savedMsg').textContent = 'Entry saved.';
+  renderDayStrip();
+
+  setTimeout(() => {
+    document.getElementById('savedMsg').textContent = '';
+  }, 2500);
+};
+
+function openDownloadModal() {
+  document.getElementById('modalBg').classList.add('open');
+}
+
+document.getElementById('exportBtn').onclick = openDownloadModal;
+document.getElementById('downloadTopBtn').onclick = openDownloadModal;
+
+document.getElementById('modalClose').onclick = () => {
+  document.getElementById('modalBg').classList.remove('open');
+};
+
+document.getElementById('modalBg').onclick = (e) => {
+  if (e.target.id === 'modalBg') {
+    document.getElementById('modalBg').classList.remove('open');
+  }
+};
+
+document.getElementById('downloadJson').onclick = () => {
+  const blob = new Blob([JSON.stringify({
+    exported: new Date().toISOString(),
+    entries: log
+  }, null, 2)], {type: 'application/json'});
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'practice-tracker-' + dateKey(today) + '.json';
+  a.click();
+
+  URL.revokeObjectURL(a.href);
+  document.getElementById('modalBg').classList.remove('open');
+};
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+document.getElementById('printSummary').onclick = () => {
+  document.getElementById('modalBg').classList.remove('open');
+
+  const entries = Object.entries(log).sort((a,b) => a[0].localeCompare(b[0]));
+  let rows = '';
+
+  entries.forEach(([key,e]) => {
+    const d = new Date(key + 'T12:00:00');
+    const dateStr = DFULL[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    const wk = WEEKS[e.week] ? WEEKS[e.week].label : '';
+    const qL = ['Noticed the weather?', 'Noticed the sky?', 'Did it change anything?'];
+
+    let qRows = '';
+
+    [0,1,2].forEach(i => {
+      const ans = (e.answers && e.answers[i]) || '-';
+      const note = (e.notes && e.notes[i]) ? '<div style="color:#666;font-style:italic;margin-top:2px;font-size:12px;">' + escapeHtml(e.notes[i]) + '</div>' : '';
+
+      qRows += '<div style="margin-bottom:5px;"><span style="color:#555;">' + qL[i] + '</span> <strong>' + escapeHtml(ans) + '</strong>' + note + '</div>';
+    });
+
+    const ref = e.reflection ? '<div style="margin-top:8px;padding-top:7px;border-top:1px solid #eee;font-style:italic;color:#555;font-size:12px;">"' + escapeHtml(e.reflection) + '"</div>' : '';
+
+    rows += '<div style="border:1px solid #ddd;border-radius:8px;padding:12px 14px;margin-bottom:10px;page-break-inside:avoid;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><strong>' + escapeHtml(dateStr) + '</strong><span style="color:#888;font-size:12px;">' + escapeHtml(wk) + '</span></div><div style="font-size:13px;line-height:1.6;">' + qRows + '</div>' + ref + '</div>';
+  });
+
+  if (!rows) {
+    rows = '<p style="color:#888;font-size:14px;">No entries saved yet.</p>';
+  }
+
+  const win = window.open('', '_blank');
+
+  win.document.write('<!DOCTYPE html><html><head><title>My Practice Tracker</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1a1a1a;}h1{font-size:24px;font-weight:700;margin-bottom:4px;}.sub{color:#666;font-size:14px;margin-bottom:24px;}@media print{body{margin:20px;}}</style></head><body><h1>Daily Practice Tracker</h1><p class="sub">Leadership Clarity - How to Stay Steady Under Pressure</p>' + rows + '<script>window.onload=function(){window.print();}<\/script></body></html>');
+
+  win.document.close();
+};
+
+renderAll();
+</script>
+</body>
+</html>
