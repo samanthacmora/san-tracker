@@ -277,6 +277,21 @@
     opacity: 1;
   }
 
+  .day-pill.is-complete {
+    border-color: rgba(255,222,12,0.75);
+  }
+
+  .day-pill.is-complete .day-dot {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    color: #ffde0c;
+    font-size: 0.8rem;
+    line-height: 1;
+    opacity: 1;
+  }
+
   .current-date {
     font-family: 'Dosis', Verdana, sans-serif;
     font-size: 1.15rem;
@@ -331,6 +346,51 @@
     border-color: rgba(255,255,255,0.28);
     color: #ffffff;
     font-weight: 700;
+  }
+
+  .completion-card {
+    background: #172d5a;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-left: 3px solid #ffde0c;
+    border-radius: 4px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 1rem;
+  }
+
+  .completion-check {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #ffffff;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+
+  .completion-check input {
+    width: 22px;
+    height: 22px;
+    accent-color: #ffde0c;
+    flex: 0 0 auto;
+  }
+
+  .completion-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .completion-title {
+    font-family: 'Dosis', Verdana, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffde0c;
+  }
+
+  .completion-help {
+    color: rgba(255,255,255,0.72);
+    font-size: 0.88rem;
   }
 
   .note-input,
@@ -551,6 +611,16 @@
 
   <div class="current-date" id="currentDate"></div>
 
+  <div class="completion-card">
+    <label class="completion-check">
+      <input type="checkbox" id="completedInput">
+      <span class="completion-copy">
+        <span class="completion-title">Practice Complete</span>
+        <span class="completion-help">Check this when you complete today's practice.</span>
+      </span>
+    </label>
+  </div>
+
   <div id="questions"></div>
 
   <div class="reflection-card">
@@ -582,7 +652,7 @@
 </div>
 
 <script>
-const COHORT_START = new Date(2025, 4, 19);
+const COHORT_START = new Date(2026, 4, 19);
 
 const WEEKS = [
   {
@@ -671,6 +741,7 @@ let selectedDate = new Date(today);
 let answers = {};
 let notes = {};
 let reflection = '';
+let completed = false;
 
 if (today < COHORT_START) {
   selectedDate = new Date(COHORT_START);
@@ -685,11 +756,13 @@ function loadEntry() {
     answers = {...e.answers};
     notes = {...e.notes};
     reflection = e.reflection || '';
+    completed = !!e.completed;
     if (e.week !== undefined) currentWeek = e.week;
   } else {
     answers = {};
     notes = {};
     reflection = '';
+    completed = false;
   }
 }
 
@@ -737,11 +810,13 @@ function renderDayStrip() {
     const isFuture = d > today;
     const isSelected = dateKey(d) === dateKey(selectedDate);
     const isToday = dateKey(d) === dateKey(today);
-    const hasEntry = !!log[dateKey(d)];
+    const entry = log[dateKey(d)];
+    const hasEntry = !!entry;
+    const isComplete = !!(entry && entry.completed);
 
     const pill = document.createElement('div');
-    pill.className = 'day-pill' + (isSelected ? ' active' : '') + (isFuture ? ' locked' : '') + (isToday ? ' is-today' : '') + (hasEntry && !isSelected ? ' has-entry' : '');
-    pill.innerHTML = '<span class="day-name">' + DNAMES[d.getDay()] + '</span><span class="day-num">' + d.getDate() + '</span><span class="day-dot"></span>';
+    pill.className = 'day-pill' + (isSelected ? ' active' : '') + (isFuture ? ' locked' : '') + (isToday ? ' is-today' : '') + (hasEntry && !isSelected ? ' has-entry' : '') + (isComplete ? ' is-complete' : '');
+    pill.innerHTML = '<span class="day-name">' + DNAMES[d.getDay()] + '</span><span class="day-num">' + d.getDate() + '</span><span class="day-dot">' + (isComplete ? '✓' : '') + '</span>';
 
     if (!isFuture) {
       pill.onclick = () => {
@@ -814,6 +889,36 @@ function renderReflection() {
   };
 }
 
+function saveCurrentEntry(showMessage) {
+  log[dateKey(selectedDate)] = {
+    week: currentWeek,
+    completed,
+    answers: {...answers},
+    notes: {...notes},
+    reflection
+  };
+
+  saveLog();
+  renderDayStrip();
+
+  if (showMessage) {
+    document.getElementById('savedMsg').textContent = 'Entry saved.';
+
+    setTimeout(() => {
+      document.getElementById('savedMsg').textContent = '';
+    }, 2500);
+  }
+}
+
+function renderCompletion() {
+  const el = document.getElementById('completedInput');
+  el.checked = completed;
+  el.onchange = () => {
+    completed = el.checked;
+    saveCurrentEntry(true);
+  };
+}
+
 function renderAll() {
   loadEntry();
   renderWeekSelector();
@@ -821,6 +926,7 @@ function renderAll() {
   renderWeekNav();
   renderDayStrip();
   renderCurrentDate();
+  renderCompletion();
   renderQuestions();
   renderReflection();
   document.getElementById('savedMsg').textContent = '';
@@ -843,20 +949,7 @@ document.getElementById('nextWeek').onclick = () => {
 };
 
 document.getElementById('saveBtn').onclick = () => {
-  log[dateKey(selectedDate)] = {
-    week: currentWeek,
-    answers: {...answers},
-    notes: {...notes},
-    reflection
-  };
-
-  saveLog();
-  document.getElementById('savedMsg').textContent = 'Entry saved.';
-  renderDayStrip();
-
-  setTimeout(() => {
-    document.getElementById('savedMsg').textContent = '';
-  }, 2500);
+  saveCurrentEntry(true);
 };
 
 function openDownloadModal() {
@@ -911,8 +1004,9 @@ document.getElementById('printSummary').onclick = () => {
     const dateStr = DFULL[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
     const wk = WEEKS[e.week] ? WEEKS[e.week].label : '';
     const qL = ['Noticed the weather?', 'Noticed the sky?', 'Did it change anything?'];
+    const completeText = e.completed ? 'Practice complete: Yes' : 'Practice complete: No';
 
-    let qRows = '';
+    let qRows = '<div style="margin-bottom:7px;color:#203d76;"><strong>' + completeText + '</strong></div>';
 
     [0,1,2].forEach(i => {
       const ans = (e.answers && e.answers[i]) || '-';
